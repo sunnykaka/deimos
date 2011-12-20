@@ -8,6 +8,9 @@
 	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
 	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"
 	default-autowire="byName">
+	
+	<import resource="persistence.spring.xml"/>
+	
 	<!-- 
 	<context:component-scan base-package="com.suteam.hc" use-default-filters="false">
 		<context:include-filter expression="org.springframework.stereotype.Repository" type="annotation"/>
