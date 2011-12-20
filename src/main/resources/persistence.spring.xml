@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd"
+	default-autowire="byName">
+	
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:/persistence.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<mongo:mongo id="mongo" host="${persistence.url}" port="${persistence.port}">
+	    <mongo:options connections-per-host="${persistence.connectionsPerHost}"
+	                   threads-allowed-to-block-for-connection-multiplier="${persistence.threadsAllowedToBlockForConnectionMultiplier}"
+	                   connect-timeout="${persistence.connectTimeout}"
+	                   max-wait-time="${persistence.maxWaitTime}"
+	                   auto-connect-retry="${persistence.autoConnectRetry}"
+	                   socket-keep-alive="${persistence.socketKeepAlive}"
+	                   socket-timeout="${persistence.socketTimeout}"
+	                   slave-ok="${persistence.slaveOk}"
+	                   write-number="${persistence.writeNumber}"
+	                   write-timeout="${persistence.writeTimeout}"
+	                   write-fsync="${persistence.writeFsync}"/>
+	</mongo:mongo>
+	
+	<mongo:db-factory id="mongoDbFactory" dbname="deimos" mongo-ref="mongo" />
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+	</bean>
+	
+</beans>
