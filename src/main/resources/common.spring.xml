@@ -11,11 +11,10 @@
 	
 	<import resource="persistence.spring.xml"/>
 	
-	<!-- 
-	<context:component-scan base-package="com.suteam.hc" use-default-filters="false">
-		<context:include-filter expression="org.springframework.stereotype.Repository" type="annotation"/>
+	<context:component-scan base-package="com.mosso.deimos" use-default-filters="false">
 		<context:include-filter expression="org.springframework.stereotype.Service" type="annotation"/>
 	</context:component-scan>
+	<!-- 
 	
 	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">

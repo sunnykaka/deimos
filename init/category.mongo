@@ -1,0 +1,9 @@
+db.category.drop()
+category1={_id:1, name:'大学英语'}
+category2={_id:2, name:'研究生英语'}
+category3={_id:3, name:'经典教材英语'}
+category4={_id:4, name:'出国考试'}
+db.category.insert(category1)
+db.category.insert(category2)
+db.category.insert(category3)
+db.category.insert(category4)

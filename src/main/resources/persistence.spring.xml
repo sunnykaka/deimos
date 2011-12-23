@@ -29,8 +29,12 @@
 	
 	<mongo:db-factory id="mongoDbFactory" dbname="deimos" mongo-ref="mongo" />
 
-	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate" >
 		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mongoConverter" ref="mappingConverter"/>
 	</bean>
+
+	<mongo:mapping-converter base-package="com.mosso.deimos.*.model" id="mappingConverter"/>
 	
+	<mongo:repositories base-package="com.mosso.deimos.*.dao" />
 </beans>

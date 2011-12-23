@@ -52,29 +52,6 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-							<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.8</version>
-				<configuration>
- 
-					<additionalBuildcommands>
-						<buildCommand>
-							<name>org.eclipse.m2e.core.maven2Builder</name>
-						</buildCommand>
-					</additionalBuildcommands>
-					<additionalProjectFacets>
-						<java>1.6</java>
-						<jst.web>2.5</jst.web>
-						<wst.jsdt.web>1.0</wst.jsdt.web>
-					</additionalProjectFacets>
-				
-						<wtpversion>2.0</wtpversion>
-						<wtpmanifest>true</wtpmanifest>
-				</configuration>
-			</plugin>
-			-->
 		</plugins>
 	</build>
 	
@@ -86,13 +63,6 @@
 			<version>${springframework.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>javax.transaction</groupId>
-			<artifactId>com.springsource.javax.transaction</artifactId>
-			<version>1.1.0</version>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -138,13 +108,6 @@
 		    <artifactId>aspectjweaver</artifactId>
 		    <version>${aspectj.version}</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>com.springsource.javax.persistence</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -220,17 +183,10 @@
 		    <scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.httpcomponents</groupId>
-		    <artifactId>httpclient</artifactId>
-		    <version>4.1.1</version>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.6.1</version>
 		</dependency>
-		<!-- 
-		<dependency>
-		    <groupId>jaxen</groupId>
-		    <artifactId>jaxen</artifactId>
-		    <version>1.1.1</version>
-		</dependency>
-		 -->
 	</dependencies>
 	<repositories>
 		<repository>
