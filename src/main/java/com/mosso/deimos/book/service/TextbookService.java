@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -111,9 +113,33 @@ public class TextbookService {
 	/**
 	 * 调用Web API得到单词详细信息
 	 */
-	public void getWordDetailsFromDict() {
-		// TODO Auto-generated method stub
+	public int getWordDetailsFromDict() {
 		
+		List<Word> words = wordDao.findAll();
+		int sucessCount = 0;
+		for(Word word : words) {
+			try {
+				String xml = Jsoup.connect(wordDetailUrl).data("utf8", "true")
+						.data("q", word.getSpell()).execute().body();
+				org.dom4j.Document document = DocumentHelper.parseText(xml);
+				org.dom4j.Element root = document.getRootElement();
+				String spell = root.elementText("key");
+				if(!word.getSpell().equals(spell)) {
+					logger.error("请求单词详细信息接口后返回的单词数据有错误,请求的单词[{0}], 返回的单词[{1}]", word.getSpell(), spell);
+					continue;
+				}
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (DocumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
+		return sucessCount;
 	}
 	
 }
