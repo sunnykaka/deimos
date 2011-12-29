@@ -2,9 +2,11 @@ package com.mosso.deimos.book.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.jsoup.Jsoup;
@@ -19,6 +21,8 @@ import org.springframework.util.StopWatch;
 
 import com.mosso.deimos.book.dao.TextbookDao;
 import com.mosso.deimos.book.dao.WordDao;
+import com.mosso.deimos.book.model.Explain;
+import com.mosso.deimos.book.model.Sentence;
 import com.mosso.deimos.book.model.Textbook;
 import com.mosso.deimos.book.model.Word;
 import com.mosso.deimos.common.exception.BusinessException;
@@ -86,6 +90,9 @@ public class TextbookService {
 						
 						Word wordBean = new Word();
 						wordBean.setSpell(word);
+						if(word.contains(" ") || word.contains(".")) {
+							wordBean.setPhrase(true);
+						}
 						wordBean.setTextbook(textbook);
 //						wordDao.save(wordBean);
 						words.add(wordBean);
@@ -117,26 +124,110 @@ public class TextbookService {
 		
 		List<Word> words = wordDao.findAll();
 		int sucessCount = 0;
+		StopWatch watch = null;
+		long httpTimeTake = 0L;
+		long httpTimeStart = 0L;
+		if(logger.isDebugEnabled()) {
+			watch = new StopWatch();
+			watch.start();
+			logger.debug("开始调用WebApi得到单词详细信息");
+		}
 		for(Word word : words) {
+			if(sucessCount > 100) return sucessCount;
 			try {
-				String xml = Jsoup.connect(wordDetailUrl).data("utf8", "true")
+				if(logger.isDebugEnabled()) {
+					httpTimeStart = System.currentTimeMillis();
+				}
+				String xml = Jsoup.connect(wordDetailUrl).timeout(5000).data("utf8", "true")
 						.data("q", word.getSpell()).execute().body();
+				if(logger.isDebugEnabled()) {
+					httpTimeTake += System.currentTimeMillis() - httpTimeStart; 
+				}
+				
+				
 				org.dom4j.Document document = DocumentHelper.parseText(xml);
 				org.dom4j.Element root = document.getRootElement();
 				String spell = root.elementText("key");
+				if(spell == null) {
+					logger.warn("查询不到该单词的信息,单词:{}", word.getSpell());
+					continue;
+				}
 				if(!word.getSpell().equals(spell)) {
-					logger.error("请求单词详细信息接口后返回的单词数据有错误,请求的单词[{0}], 返回的单词[{1}]", word.getSpell(), spell);
+					logger.error("请求单词详细信息接口后返回的单词数据有错误,请求的单词[{}], 返回的单词[{}]", word.getSpell(), spell);
 					continue;
 				}
 				
+				if(!word.getPhrase()) {
+					//例子:http://mp3.dict.cn/mp3.php?q=efVw7
+					String audio = root.elementText("audio");
+					if(!StringUtils.isBlank(audio)) {
+						word.setAudio(audio);
+						int paramIndex = audio.indexOf("q=");
+						if(paramIndex != -1) {
+							word.setAudioParam(audio.substring(paramIndex + 2));
+						}
+					}
+					
+					//例子:'reb&#601;l,ri'bel
+					String pron = root.elementText("pron");
+					if(!StringUtils.isBlank(pron)) {
+						String[] prons = pron.split(",");
+						if(prons != null && prons.length > 0) {
+							word.setProns(Arrays.asList(prons));
+						}
+					}
+				}
+				
+				//例子:n.单词,消息,话语,诺言\nv.用词语表达
+				String def = root.elementText("def");
+				if(!StringUtils.isBlank(def)) {
+					String[] defs = def.split("\\n");
+					List<Explain> explainList = new ArrayList<Explain>(defs.length);
+					for (int i = 0; i < defs.length; i++) {
+						def = defs[i];
+						Explain explain = new Explain();
+						int charactLastIndex = def.indexOf(".");
+						if(charactLastIndex != -1) {
+							explain.setCharact(def.substring(0, charactLastIndex));
+							explain.setExplain(def.substring(charactLastIndex+1));
+						} else {
+							explain.setExplain(def);
+						}
+						explainList.add(explain);
+					}
+					word.setExplains(explainList);
+				}
+				
+				
+				List<org.dom4j.Element> sents = root.elements("sent");
+				if(sents != null && !sents.isEmpty()) {
+					List<Sentence> sentenceList = new ArrayList<Sentence>(sents.size());
+					for(org.dom4j.Element sent : sents) {
+						String orig = sent.elementText("orig");
+						String trans = sent.elementText("trans");
+						Sentence sentence = new Sentence();
+						sentence.setOrig(orig);
+						sentence.setTrans(trans);
+						sentenceList.add(sentence);
+					}
+					word.setSentences(sentenceList);
+				}
+				word.setValid(true);
+				
+				sucessCount++;
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("请求单词接口时发生错误, 单词:" + word.getSpell(), e);
 			} catch (DocumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("解析xml文件时发生错误, 单词:" + word.getSpell(), e);
 			}
 			
+		}
+		
+		if(logger.isDebugEnabled() && watch != null) {
+			watch.stop();
+			logger.debug(watch.prettyPrint());
+			logger.debug("http请求共耗时" + httpTimeTake + "ms");
+			logger.debug("现存{}个单词,成功得到{}个单词详细信息", words.size(), sucessCount);
 		}
 		
 		return sucessCount;

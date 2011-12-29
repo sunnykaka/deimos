@@ -23,7 +23,7 @@ public class Word {
 	private String spell;
 	
 	//发音
-	private List<String> phonograms;
+	private List<String> prons;
 	
 	//单词解释
 	private List<Explain> explains;
@@ -35,7 +35,13 @@ public class Word {
 	private String audioParam;
 	
 	//例句
-	private List<String> sentences;
+	private List<Sentence> sentences;
+	
+	//是否是短语
+	private Boolean phrase = false;
+	
+	//单词是否有效
+	private Boolean valid = false;
 	
 	//教材
 	@DBRef
@@ -55,14 +61,6 @@ public class Word {
 
 	public void setSpell(String spell) {
 		this.spell = spell;
-	}
-
-	public List<String> getPhonograms() {
-		return phonograms;
-	}
-
-	public void setPhonograms(List<String> phonograms) {
-		this.phonograms = phonograms;
 	}
 
 	public List<Explain> getExplains() {
@@ -89,11 +87,11 @@ public class Word {
 		this.audioParam = audioParam;
 	}
 
-	public List<String> getSentences() {
+	public List<Sentence> getSentences() {
 		return sentences;
 	}
 
-	public void setSentences(List<String> sentences) {
+	public void setSentences(List<Sentence> sentences) {
 		this.sentences = sentences;
 	}
 
@@ -103,5 +101,29 @@ public class Word {
 
 	public void setTextbook(Textbook textbook) {
 		this.textbook = textbook;
+	}
+
+	public List<String> getProns() {
+		return prons;
+	}
+
+	public void setProns(List<String> prons) {
+		this.prons = prons;
+	}
+
+	public Boolean getPhrase() {
+		return phrase;
+	}
+
+	public void setPhrase(Boolean phrase) {
+		this.phrase = phrase;
+	}
+
+	public Boolean getValid() {
+		return valid;
+	}
+
+	public void setValid(Boolean valid) {
+		this.valid = valid;
 	}
 }
