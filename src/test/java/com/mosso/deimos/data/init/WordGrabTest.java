@@ -1,10 +1,7 @@
 package com.mosso.deimos.data.init;
 
 import java.util.Date;
-import java.util.List;
 
-import org.dom4j.DocumentHelper;
-import org.jsoup.Jsoup;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +33,9 @@ public class WordGrabTest extends BaseTest {
 //	@Autowired
 //	BaseDao baseDao;
 	
+	String cet4Name = "大学英语四级";
+	String cet6Name = "大学英语六级";
+	
 	@Test
 	@Ignore
 	/**
@@ -43,8 +43,6 @@ public class WordGrabTest extends BaseTest {
 	 */
 	public void grabWordsFromShanbay() {
 		//抓取大学四六级教材
-		String cet4Name = "大学英语四级";
-		String cet6Name = "大学英语六级";
 		
 		Category category = categoryDao.getByName("大学英语");
 		if(category == null) {
@@ -78,25 +76,23 @@ public class WordGrabTest extends BaseTest {
 	 * 调用Web API得到单词详细信息
 	 */
 	@Test
+	@Ignore
 	public void getWordDetailsFromDict() throws Exception {
-		System.out.println(textbookService.getWordDetailsFromDict());
-//		String word = "word";
-//		String wordDetailUrl = "http://dict.cn/ws.php";
-//		String xml = Jsoup.connect(wordDetailUrl).data("utf8", "true")
-//				.data("q", word).execute().body();
-//		org.dom4j.Document document = DocumentHelper.parseText(xml);
-//		org.dom4j.Element root = document.getRootElement();
-//		String spell = root.elementText("key");
-//		String audio = root.elementText("audio");
-//		String pron = root.elementText("pron");
-//		String def = root.elementText("def");
-//		List<org.dom4j.Element> sents = root.elements("sent");
-//		if(sents != null && !sents.isEmpty()) {
-//			for(org.dom4j.Element sent : sents) {
-//				String orig = sent.elementText("orig");
-//				String trans = sent.elementText("trans");
-//			}
-//		}
-//		System.out.println("finish");
+		Textbook cet4 = textbookDao.getByName(cet4Name);
+		Textbook cet6 = textbookDao.getByName(cet6Name);
+		System.out.println(textbookService.getWordDetailsFromDict(cet4));
+		System.out.println(textbookService.getWordDetailsFromDict(cet6));
+	}
+	
+	/**
+	 * 调用Web API得到单词详细信息
+	 */
+	@Test
+	@Ignore
+	public void getWordSuggAndBuildQuestion() throws Exception {
+		Textbook cet4 = textbookDao.getByName(cet4Name);
+		Textbook cet6 = textbookDao.getByName(cet6Name);
+		System.out.println(textbookService.getWordSuggAndBuildQuestion(cet4));
+		System.out.println(textbookService.getWordSuggAndBuildQuestion(cet6));
 	}
 }

@@ -43,6 +43,9 @@ public class Word {
 	//单词是否有效
 	private Boolean valid = false;
 	
+	//相近的词
+	private List<String> similarWords;
+	
 	//教材
 	@DBRef
 	private Textbook textbook;
@@ -125,5 +128,27 @@ public class Word {
 
 	public void setValid(Boolean valid) {
 		this.valid = valid;
+	}
+
+	public List<String> getSimilarWords() {
+		return similarWords;
+	}
+
+	public void setSimilarWords(List<String> similarWords) {
+		this.similarWords = similarWords;
+	}
+	
+	/**
+	 * 得到单词解释
+	 * @return
+	 */
+	public String getPrettyExplain() {
+		if(explains == null || explains.isEmpty()) return null;
+		StringBuilder sb = new StringBuilder();
+		for(Explain e : explains) {
+			sb.append(e.getCharact()).append(". ").append(e.getExplain()).append(";");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
 	}
 }

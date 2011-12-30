@@ -22,6 +22,7 @@ import org.springframework.util.StopWatch;
 import com.mosso.deimos.book.dao.TextbookDao;
 import com.mosso.deimos.book.dao.WordDao;
 import com.mosso.deimos.book.model.Explain;
+import com.mosso.deimos.book.model.Question;
 import com.mosso.deimos.book.model.Sentence;
 import com.mosso.deimos.book.model.Textbook;
 import com.mosso.deimos.book.model.Word;
@@ -35,6 +36,9 @@ import com.mosso.deimos.common.exception.BusinessException;
 public class TextbookService {
 	
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+	private WordService wordService;
 	
 	@Autowired
 	private TextbookDao textbookDao;
@@ -120,23 +124,26 @@ public class TextbookService {
 	/**
 	 * 调用Web API得到单词详细信息
 	 */
-	public int getWordDetailsFromDict() {
+	@SuppressWarnings("unchecked")
+	public int getWordDetailsFromDict(Textbook textbook) {
 		
-		List<Word> words = wordDao.findAll();
-		int sucessCount = 0;
+		List<Word> words = wordDao.findByTextbookId(textbook.getId());
+		int successCount = 0;
 		StopWatch watch = null;
 		long httpTimeTake = 0L;
 		long httpTimeStart = 0L;
 		if(logger.isDebugEnabled()) {
 			watch = new StopWatch();
 			watch.start();
-			logger.debug("开始调用WebApi得到单词详细信息");
+			logger.debug("开始调用WebApi得到{}单词详细信息", textbook.getName());
 		}
 		for(Word word : words) {
-			if(sucessCount > 100) return sucessCount;
 			try {
 				if(logger.isDebugEnabled()) {
 					httpTimeStart = System.currentTimeMillis();
+					if(successCount != 0 && successCount % 1000 == 0) {
+						logger.debug("已成功更新{}个单词", successCount);
+					}
 				}
 				String xml = Jsoup.connect(wordDetailUrl).timeout(5000).data("utf8", "true")
 						.data("q", word.getSpell()).execute().body();
@@ -213,8 +220,9 @@ public class TextbookService {
 					word.setSentences(sentenceList);
 				}
 				word.setValid(true);
+				wordDao.save(word);
 				
-				sucessCount++;
+				successCount++;
 			} catch (IOException e) {
 				logger.error("请求单词接口时发生错误, 单词:" + word.getSpell(), e);
 			} catch (DocumentException e) {
@@ -227,10 +235,82 @@ public class TextbookService {
 			watch.stop();
 			logger.debug(watch.prettyPrint());
 			logger.debug("http请求共耗时" + httpTimeTake + "ms");
-			logger.debug("现存{}个单词,成功得到{}个单词详细信息", words.size(), sucessCount);
+			logger.debug("{}现存{}个单词,成功得到{}个单词详细信息", new Object[]{textbook.getName(),words.size(), successCount});
 		}
 		
-		return sucessCount;
+		return successCount;
+	}
+
+	/**
+	 * 获得单词的相似词以及构建问题列表
+	 * @param textbook
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public int getWordSuggAndBuildQuestion(Textbook textbook) {
+		List<Word> words = wordDao.findByTextbookId(textbook.getId());
+		List<Question> questions = new ArrayList<Question>();
+		int successCount = 0;
+		StopWatch watch = null;
+		long httpTimeTake = 0L;
+		long httpTimeStart = 0L;
+		if(logger.isDebugEnabled()) {
+			watch = new StopWatch();
+			watch.start();
+			logger.debug("开始调用WebApi构建{}单词问题列表", textbook.getName());
+		}
+		for(Word word : words) {
+			try {
+				if(!word.getValid()) continue;
+				if(logger.isDebugEnabled()) {
+					httpTimeStart = System.currentTimeMillis();
+					if(successCount != 0 && successCount % 1000 == 0) {
+						logger.debug("已成功构建{}个单词", successCount);
+					}
+				}
+				if(!word.getPhrase()) {
+					//单词
+					String xml = Jsoup.connect(wordDetailUrl).timeout(5000)
+							.data("q", "[" + word.getSpell() + "]").execute().body();
+					if(logger.isDebugEnabled()) {
+						httpTimeTake += System.currentTimeMillis() - httpTimeStart; 
+					}
+					org.dom4j.Document document = DocumentHelper.parseText(xml);
+					org.dom4j.Element root = document.getRootElement();
+					
+					List<org.dom4j.Element> suggs = root.elements("sugg");
+					if(suggs != null && !suggs.isEmpty()) {
+						List<String> similarWords = new ArrayList<String>(suggs.size());
+						for(org.dom4j.Element sugg : suggs) {
+							similarWords.add(sugg.getText());
+						}
+						word.setSimilarWords(similarWords);
+					}
+					questions.addAll(wordService.buildQuestions(word, word.getSimilarWords()));
+					
+					wordDao.save(word);
+				} else {
+					//短语
+					questions.addAll(wordService.buildQuestions(word, null));
+				}
+				
+				successCount++;
+			} catch (IOException e) {
+				logger.error("请求单词接口时发生错误, 单词:" + word.getSpell(), e);
+			} catch (DocumentException e) {
+				logger.error("解析xml文件时发生错误, 单词:" + word.getSpell(), e);
+			}
+			
+		}
+		
+		if(logger.isDebugEnabled() && watch != null) {
+			watch.stop();
+			logger.debug(watch.prettyPrint());
+			logger.debug("http请求共耗时" + httpTimeTake + "ms");
+			logger.debug("{}有{}个单词需要构建问题列表,有{}个单词构建成功,保存问题{}条", new Object[]{textbook.getName(),words.size(), successCount, questions.size()});
+		}
+		
+		return successCount;
 	}
 	
 }
