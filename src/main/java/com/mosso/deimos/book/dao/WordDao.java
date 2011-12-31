@@ -13,7 +13,7 @@ import com.mosso.deimos.book.model.Word;
  */
 public interface WordDao extends MongoRepository<Word, String>, WordCustomDao{
 	
-	@Query(value = "{ 'textbook.$id' : ?0 }")
+	@Query(value = "{'textbook': {'$ref': 'textbook', '$id': {'$oid': ?0 } } }")
 	List<Word> findByTextbookId(String textbookId);
 	
 	@Query(value = "{ 'spell' : ?0 }")

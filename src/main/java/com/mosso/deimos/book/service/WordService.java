@@ -1,6 +1,7 @@
 package com.mosso.deimos.book.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -25,6 +26,9 @@ public class WordService {
 	
 	@Autowired
 	private WordDao wordDao;
+
+	
+	private final int optionMaxSize = 3;
 	
 
 	/**
@@ -35,50 +39,67 @@ public class WordService {
 	 */
 	public List<Question> buildQuestions(Word word, List<String> similarWords) {
 		List<Question> questions = new ArrayList<Question>();
+		
+		int optionSize = 0;
+		List<Word> optionWords = new ArrayList<Word>();
+		//丢掉前4个类似的单词,因为有可能是该词的不同时态
+		if(similarWords != null && similarWords.size() > 4) {
+			for(int i=4; i<similarWords.size(); i++) {
+				String similarWord = similarWords.get(i);
+				Word similarWordBean = wordDao.getBySpell(similarWord);
+				if(similarWordBean == null) continue;
+				optionWords.add(similarWordBean);
+				if(++optionSize == optionMaxSize) {
+					//如果已经找到了足够的选项,退出循环
+					break;
+				}
+			}
+		}
+		
 		if(!word.getPhrase()) {
 			//单词
 			
 			Question q1 = new Question();
+			q1.setWord(word);
 			q1.setType(EnumQuestionType.TYPE_1.value);
 			q1.setOrdinal(0);
-			setOptionsAndRightIndex(q1, EnumQuestionType.TYPE_1, similarWords);
-			q1.setWord(word);
+			setOptionsAndRightIndex(q1, EnumQuestionType.TYPE_1, new ArrayList<Word>(optionWords));
 			questions.add(q1);
 			
 			Question q2 = new Question();
+			q2.setWord(word);
 			q2.setType(EnumQuestionType.TYPE_2.value);
 			q2.setOrdinal(1);
-			setOptionsAndRightIndex(q2, EnumQuestionType.TYPE_2, similarWords);
-			q2.setWord(word);
+			setOptionsAndRightIndex(q2, EnumQuestionType.TYPE_2, new ArrayList<Word>(optionWords));
 			questions.add(q2);
 			
 			Question q3 = new Question();
+			q3.setWord(word);
 			q3.setType(EnumQuestionType.TYPE_3.value);
 			q3.setOrdinal(2);
-			setOptionsAndRightIndex(q3, EnumQuestionType.TYPE_3, similarWords);
-			q3.setWord(word);
+			setOptionsAndRightIndex(q3, EnumQuestionType.TYPE_3, new ArrayList<Word>(optionWords));
 			questions.add(q3);
 			
 			Question q4 = new Question();
+			q4.setWord(word);
 			q4.setType(EnumQuestionType.TYPE_4.value);
 			q4.setOrdinal(3);
-			q4.setWord(word);
 			questions.add(q4);
 		} else {
 			//短语
 			
 			Question q1 = new Question();
+			q1.setWord(word);
 			q1.setType(EnumQuestionType.TYPE_1.value);
 			q1.setOrdinal(0);
-			setOptionsAndRightIndex(q1, EnumQuestionType.TYPE_1, similarWords);
-			q1.setWord(word);
+			setOptionsAndRightIndex(q1, EnumQuestionType.TYPE_1, new ArrayList<Word>(optionWords));
 			questions.add(q1);
 			
 			Question q2 = new Question();
+			q2.setWord(word);
 			q2.setType(EnumQuestionType.TYPE_2.value);
 			q2.setOrdinal(1);
-			setOptionsAndRightIndex(q2, EnumQuestionType.TYPE_2, similarWords);
-			q2.setWord(word);
+			setOptionsAndRightIndex(q2, EnumQuestionType.TYPE_2, new ArrayList<Word>(optionWords));
 			questions.add(q2);
 			
 		}
@@ -93,26 +114,11 @@ public class WordService {
 	 * @param similarWords
 	 */
 	private void setOptionsAndRightIndex(Question q, EnumQuestionType type,
-			List<String> similarWords) {
+			List<Word> optionWords) {
 		
-		int optionSize = 0;
-		int optionMaxSize = 3;
-		List<Word> optionWords = new ArrayList<Word>();
 		List<String> options = new ArrayList<String>();
-		
-		//丢掉前4个类似的单词,因为有可能是该词的不同时态
-		if(similarWords != null && similarWords.size() > 4) {
-			for(int i=4; i<similarWords.size(); i++) {
-				String similarWord = similarWords.get(i);
-				Word similarWordBean = wordDao.getBySpell(similarWord);
-				if(similarWordBean == null) continue;
-				optionWords.add(similarWordBean);
-				if(++optionSize == optionMaxSize) {
-					//如果已经找到了足够的选项,退出循环
-					break;
-				}
-			}
-		}
+		int optionSize = optionWords.size();
+
 		while(optionSize < optionMaxSize) {
 			Word word = wordDao.findRandomOne();
 			if(word == null) continue;

@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
+import com.mosso.deimos.book.dao.QuestionDao;
 import com.mosso.deimos.book.dao.TextbookDao;
 import com.mosso.deimos.book.dao.WordDao;
 import com.mosso.deimos.book.model.Explain;
@@ -45,6 +46,9 @@ public class TextbookService {
 	
 	@Autowired
 	private WordDao wordDao;
+	
+	@Autowired
+	private QuestionDao questionDao;
 	
 	private String grabWordUrl = "http://www.shanbay.com";
 	private String wordDetailUrl = "http://dict.cn/ws.php";
@@ -301,6 +305,9 @@ public class TextbookService {
 				logger.error("解析xml文件时发生错误, 单词:" + word.getSpell(), e);
 			}
 			
+		}
+		if(!questions.isEmpty()) {
+			questionDao.insertBatch(questions);
 		}
 		
 		if(logger.isDebugEnabled() && watch != null) {

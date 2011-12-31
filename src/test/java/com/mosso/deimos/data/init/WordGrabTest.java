@@ -88,7 +88,7 @@ public class WordGrabTest extends BaseTest {
 	 * 调用Web API得到单词详细信息
 	 */
 	@Test
-	@Ignore
+//	@Ignore
 	public void getWordSuggAndBuildQuestion() throws Exception {
 		Textbook cet4 = textbookDao.getByName(cet4Name);
 		Textbook cet6 = textbookDao.getByName(cet6Name);

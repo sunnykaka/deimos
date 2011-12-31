@@ -146,8 +146,9 @@ public class Word {
 		if(explains == null || explains.isEmpty()) return null;
 		StringBuilder sb = new StringBuilder();
 		for(Explain e : explains) {
-			sb.append(e.getCharact()).append(". ").append(e.getExplain()).append(";");
+			sb.append(e.getCharact()).append(". ").append(e.getExplain()).append("; ");
 		}
+		sb.deleteCharAt(sb.length()-1);
 		sb.deleteCharAt(sb.length()-1);
 		return sb.toString();
 	}
