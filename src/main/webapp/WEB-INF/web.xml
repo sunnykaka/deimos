@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app id="WebApp_ID" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-	<display-name>HC_PROXY</display-name>
+	<display-name>Deimos</display-name>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>classpath:common.spring.xml</param-value>
 	</context-param>
 	<welcome-file-list>
-		<welcome-file>index.do</welcome-file>
+		<welcome-file>index.action</welcome-file>
 	</welcome-file-list>
 	<filter>
 		<filter-name>CharacterEncodingFilter</filter-name>
@@ -19,6 +19,29 @@
 	<filter-mapping>
 		<filter-name>CharacterEncodingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>LoginFilter</filter-name>
+		<filter-class>com.mosso.deimos.common.filter.LoginFilter</filter-class>
+		<init-param>
+		  <param-name>URL_EXCEPT</param-name>
+		  <param-value>/login.action,/logout.action,/register/*</param-value>
+	  	</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>LoginFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+	<filter>
+		<filter-name>SitemeshFilter</filter-name>
+		<filter-class>com.opensymphony.module.sitemesh.filter.PageFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>SitemeshFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>INCLUDE</dispatcher>
 	</filter-mapping>
 	<servlet>
 		<servlet-name>SpringMvc</servlet-name>
