@@ -25,7 +25,7 @@
 		<filter-class>com.mosso.deimos.common.filter.LoginFilter</filter-class>
 		<init-param>
 		  <param-name>URL_EXCEPT</param-name>
-		  <param-value>/login.action,/logout.action,/register/*</param-value>
+		  <param-value>/login.action,/logout.action,/register.action</param-value>
 	  	</init-param>
 	</filter>
 	<filter-mapping>

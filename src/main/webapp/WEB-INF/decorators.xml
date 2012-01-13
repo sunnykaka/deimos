@@ -7,6 +7,8 @@
 	</decorator>
 	<excludes>
 		<pattern>/ajax/*</pattern>
+		<pattern>/login.action</pattern>
+		<pattern>/register.action</pattern>
 	</excludes>
 
 </decorators>
